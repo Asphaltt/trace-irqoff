@@ -191,13 +191,17 @@ static int noop_pre_handler(struct kprobe *p, struct pt_regs *regs){
 static void stack_trace_skip_hardirq_init(void)
 {
 	int ret;
-	struct kprobe kp;
 	unsigned long (*kallsyms_lookup_name_fun)(const char *name);
-
+	/**
+	 * Ensure all fields are initialized.
+	 * Ref: https://gcc.gnu.org/onlinedocs/gcc-4.0.3/gcc/Designated-Inits.html
+	 */
+	struct kprobe kp = {
+		.symbol_name = "kallsyms_lookup_name",
+		.pre_handler = noop_pre_handler
+	};
 
 	ret = -1;
-	kp.symbol_name = "kallsyms_lookup_name";
-	kp.pre_handler = noop_pre_handler;
 	stack_trace_save_skip_hardirq = NULL;
 
 	ret = register_kprobe(&kp);
